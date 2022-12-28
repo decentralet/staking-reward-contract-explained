@@ -1,7 +1,7 @@
 pragma solidity >=0.4.24;
 
-
-interface StakingRewardController {
+// https://docs.synthetix.io/contracts/source/interfaces/istakingrewards
+interface IStakingRewards {
     // Views
 
     function balanceOf(address account) external view returns (uint256);
