@@ -27,7 +27,7 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
     IERC20 public stakingToken; // This is the address of the token that would be staked into this contract 
     uint256 public periodFinish = 0; // This is a block.timestamp when the reward distrubtion would be ending 
     uint256 public rewardRate = 0; // This is going to be the (total-reward / duration staking would last)
-    uint256 public rewardsDuration = 60; // This is the reward duration 
+    uint256 public rewardsDuration = 300; // This is the reward duration 
     uint256 public lastUpdateTime; // This variable holds when(block.timestamp) a stake or withdraw action takes place on this contract 
     uint256 public rewardPerTokenStored; // This is a very important variable, it holds the reward per token 
 
@@ -82,6 +82,7 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
         return _balances[account].mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
     }
 
+    /// @notice this function returns the amount of reward token that would be distrubtued within the given rewardDuration
     function getRewardForDuration() external view returns (uint256) {
         return rewardRate.mul(rewardsDuration);
     }
