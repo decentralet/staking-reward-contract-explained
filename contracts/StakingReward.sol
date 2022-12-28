@@ -12,24 +12,30 @@ import "./utils/Pausable.sol";
 
 // https://docs.synthetix.io/contracts/source/contracts/stakingrewards
 contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, ReentrancyGuard, Pausable {
-    using SafeMath for uint256;
+    using SafeMath for uint256; 
+    /** This smart contract was rewritten before version 0.8.0 so overflow and underflow must be placed into consideration and this library (SafeMath) and making 
+     * it available for use to all uint256 dataTypes
+      */
     using SafeERC20 for IERC20;
+    /**
+     * SafeERC20 library would help in transfer ERC20 token even if during implemention, the functions therein does not return a boolean [here by preventing error]
+     */
 
     /* ========== STATE VARIABLES ========== */
 
-    IERC20 public rewardsToken;
-    IERC20 public stakingToken;
-    uint256 public periodFinish = 0;
-    uint256 public rewardRate = 0;
-    uint256 public rewardsDuration = 7 days;
-    uint256 public lastUpdateTime;
-    uint256 public rewardPerTokenStored;
+    IERC20 public rewardsToken; // This is the address of the token that would be dispersed as reward
+    IERC20 public stakingToken; // This is the address of the token that would be staked into this contract 
+    uint256 public periodFinish = 0; // This is a block.timestamp when the reward distrubtion would be ending 
+    uint256 public rewardRate = 0; // This is going to be the (total-reward / duration staking would last)
+    uint256 public rewardsDuration = 7 days; // This is the reward duration 
+    uint256 public lastUpdateTime; // This variable holds when(block.timestamp) a stake or withdraw action takes place on this contract 
+    uint256 public rewardPerTokenStored; // This is a very important variable, it holds the reward per token 
 
-    mapping(address => uint256) public userRewardPerTokenPaid;
-    mapping(address => uint256) public rewards;
+    mapping(address => uint256) public userRewardPerTokenPaid; // This is the specific reward per token of a user 
+    mapping(address => uint256) public rewards; // This mapping stores the reward a users has accumulated with time 
 
-    uint256 private _totalSupply;
-    mapping(address => uint256) private _balances;
+    uint256 private _totalSupply; // This is the number of tokens that has been staked or the number of share minted out
+    mapping(address => uint256) private _balances; // This mapping holds the number of token a user has staked 
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -41,7 +47,7 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
     ) public Owned(_owner) {
         rewardsToken = IERC20(_rewardsToken);
         stakingToken = IERC20(_stakingToken);
-        rewardsDistribution = _rewardsDistribution;
+        rewardsDistribution = _rewardsDistribution; // This is the address that can change the reward distrubtion and some other state variable in this contract
     }
 
     /* ========== VIEWS ========== */
