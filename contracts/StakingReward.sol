@@ -27,7 +27,7 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
     IERC20 public stakingToken; // This is the address of the token that would be staked into this contract 
     uint256 public periodFinish = 0; // This is a block.timestamp when the reward distrubtion would be ending 
     uint256 public rewardRate = 0; // This is going to be the (total-reward / duration staking would last)
-    uint256 public rewardsDuration = 7 days; // This is the reward duration 
+    uint256 public rewardsDuration = 60; // This is the reward duration 
     uint256 public lastUpdateTime; // This variable holds when(block.timestamp) a stake or withdraw action takes place on this contract 
     uint256 public rewardPerTokenStored; // This is a very important variable, it holds the reward per token 
 
@@ -52,18 +52,22 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
 
     /* ========== VIEWS ========== */
 
+    /// @notice this function would return the number of tokens that has been staked 
     function totalSupply() external view returns (uint256) {
         return _totalSupply;
     }
 
+    /// @notice this function would return the number of tokens a user staked 
     function balanceOf(address account) external view returns (uint256) {
         return _balances[account];
     }
 
+    /// @notice this function would return when the staking is going to be over is the current block.timestamp is less than that time else  it would just return the block.timestamp
     function lastTimeRewardApplicable() public view returns (uint256) {
         return block.timestamp < periodFinish ? block.timestamp : periodFinish;
     }
 
+    /// 
     function rewardPerToken() public view returns (uint256) {
         if (_totalSupply == 0) {
             return rewardPerTokenStored;
@@ -100,6 +104,7 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
         emit Withdrawn(msg.sender, amount);
     }
 
+    /// @notice this function would send to the user the accumulated reward 
     function getReward() public nonReentrant updateReward(msg.sender) {
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
@@ -109,6 +114,7 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
         }
     }
 
+    /// this function would send to the user the accumulated rewards on staking and also send to the user the tokens they staked 
     function exit() external {
         withdraw(_balances[msg.sender]);
         getReward();
@@ -117,9 +123,9 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
     /* ========== RESTRICTED FUNCTIONS ========== */
 
     function notifyRewardAmount(uint256 reward) external onlyRewardsDistribution updateReward(address(0)) {
-        if (block.timestamp >= periodFinish) {
-            rewardRate = reward.div(rewardsDuration);
-        } else {
+        if (block.timestamp >= periodFinish) { // this means the inital stakig duration has ended and you want to re-init the staking process
+            rewardRate = reward.div(rewardsDuration); 
+        } else { // because the inital staking period has not ended, the rewardRate needs to take account the previous rate before upadting the rate
             uint256 remaining = periodFinish.sub(block.timestamp);
             uint256 leftover = remaining.mul(rewardRate);
             rewardRate = reward.add(leftover).div(rewardsDuration);
